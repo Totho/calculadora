@@ -1,0 +1,30 @@
+#include <zmq.h>
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+
+int main (void)
+{
+    printf ("Connecting to hello world server...\n");
+    void *context = zmq_ctx_new (); 
+    void *requester = zmq_socket (context, ZMQ_REQ); 
+    zmq_connect (requester, "tcp://localhost:5555"); 
+
+
+    int request_nbr;
+    for (request_nbr = 0; request_nbr != 4; request_nbr++) {
+        char o[255];  
+        char r[255]; 
+
+        printf ("Sending Operation %d...\n", request_nbr);
+
+        scanf("%s",o); 
+
+        zmq_send (requester,o, 255, 0); 
+        zmq_recv (requester, r, 255, 0); 
+        printf ("Received Result: %s\n", r);
+    }
+    zmq_close (requester); 
+    zmq_ctx_destroy (context); 
+    return 0;
+}
