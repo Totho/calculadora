@@ -1,0 +1,82 @@
+#include <zmq.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <assert.h>
+#include <stdlib.h>
+
+int main (void)
+{ 
+    void *context = zmq_ctx_new ();
+    void *responder = zmq_socket (context, ZMQ_REP); 
+    int rc = zmq_bind (responder, "tcp://*:5555"); 
+    assert (rc == 0); 
+	
+    while (1) 
+	{
+        char buffer [255]; 
+        zmq_recv (responder, buffer, 255, 0);  
+       
+        int i=0,l=0,f=0, respuesta;
+        char cadNum1[255],cadNum2[255], op; 
+        l=strlen(buffer); 
+        int j=0;
+		
+		
+        for (i=0,j=0;i<l;i++)
+		{
+            char a=buffer[i];
+            if(f==0)
+			{
+                if(a=='+'||a=='-'||a=='*'||a=='/')
+				{
+                    op=buffer[i];
+                    cadNum1[i]='\0';
+                    f=1;
+                }
+				else
+                    cadNum1[i]=a;
+            }
+			else
+			{
+                cadNum2[j]=a;
+                j++;
+            }  
+        }
+        cadNum2[j]='\0';
+
+        int num1=atoi(cadNum1); 
+        int num2=atoi(cadNum2);
+
+		
+		if(op == '+')
+		{
+			respuesta=num1+num2; 
+		}
+		if(op == '-')
+		{
+			respuesta=num1-num2; 
+		}
+		if(op == '*')
+		{
+			respuesta=num1*num2; 
+		}
+		if(op == '/')
+		{
+			respuesta=num1/num2; 
+		}
+		
+		
+
+		char res[255];
+
+        sprintf(res,"%d",respuesta);
+        printf("%d %c %d = %s\n",num1,op,num2,res);
+
+        
+        printf ("Received: %s\n",buffer); 
+        sleep (1);         
+        zmq_send (responder,res,255, 0);
+    }
+    return 0;
+}
